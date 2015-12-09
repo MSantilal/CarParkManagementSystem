@@ -2,7 +2,6 @@ package server;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 public class CarDataModel
 {
     public static final AtomicInteger AtomicCount = new AtomicInteger(0);

@@ -1,33 +1,69 @@
 package server;
 
+import com.thoughtworks.xstream.XStream;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 
 public class CarParkProcessingThread extends Thread
 {
     private Socket clientSocket;
-    private ClientType clientType;
     private SharedCarParkState sharedCarParkState;
+    private XStream xStream;
 
-    public CarParkProcessingThread(Socket socket, ClientType clientType, SharedCarParkState sharedCarParkState)
+    public CarParkProcessingThread(Socket socket, SharedCarParkState sharedCarParkState)
     {
         super("CarParkProcessingThread");
         this.clientSocket = socket;
-        this.clientType = clientType;
         this.sharedCarParkState = sharedCarParkState;
+        xStream = new XStream();
     }
 
     @Override
     public void run()
     {
-        try
+        if (clientSocket != null && clientSocket.isConnected())
         {
-            sharedCarParkState.AcquireLock();
-            sharedCarParkState.ProcessEntry(clientType, new CarDataModel("Mercedes", "W05"));
-            sharedCarParkState.ReleaseLock();
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
+            try
+            {
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                try
+                {
+                    while (bufferedReader.readLine() != null)
+                    {
+                        ClientDataModel deserialisedClientData = (ClientDataModel) xStream.fromXML(bufferedReader.readLine());
+                        sharedCarParkState.AcquireLock();
+                        switch (deserialisedClientData.ClientType)
+                        {
+                            case ENTRANCE:
+                                sharedCarParkState.ProcessEntry(ClientType.ENTRANCE, deserialisedClientData);
+                                break;
+                            case GROUNDFLOOREXIT:
+                                sharedCarParkState.ProcessExit(ClientType.GROUNDFLOOREXIT);
+                                break;
+                            case FIRSTFLOOREXIT:
+                                sharedCarParkState.ProcessExit(ClientType.FIRSTFLOOREXIT);
+                                break;
+                        }
+                        sharedCarParkState.ReleaseLock();
+                    }
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
         }
 
     }

@@ -27,7 +27,7 @@ public class ServerMain
         {
             try
             {
-                BeingProcessingClients();
+                BeginProcessingClients();
             }
             catch (IOException e)
             {
@@ -74,13 +74,13 @@ public class ServerMain
         }
     }
 
-    private void BeingProcessingClients() throws IOException
+    private void BeginProcessingClients() throws IOException
     {
         try
         {
             while (serverSocket.isBound())
             {
-                new CarParkProcessingThread(serverSocket.accept(), ClientType.ENTRANCE, sharedCarParkState).start();
+                new CarParkProcessingThread(serverSocket.accept(), sharedCarParkState).start();
             }
         }
         catch (Exception e)

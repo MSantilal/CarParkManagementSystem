@@ -6,17 +6,18 @@ import java.util.ArrayList;
 
 public class SharedCarParkState
 {
-    private ClientType clientType;
     private boolean isAccessing = false;
     private int waitingThreads = 0;
 
-    private ArrayList<CarDataModel> groundFloorCollection;
-    private ArrayList<CarDataModel> firstFloorCollection;
+    private final ArrayList<CarDataModel> groundFloorCollection;
+    private final ArrayList<CarDataModel> firstFloorCollection;
+    private final ArrayList<CarDataModel> queuedCarsCollection;
 
     public SharedCarParkState()
     {
         groundFloorCollection = new ArrayList<CarDataModel>();
         firstFloorCollection = new ArrayList<CarDataModel>();
+        queuedCarsCollection = new ArrayList<CarDataModel>();
     }
 
     public synchronized void AcquireLock() throws InterruptedException
@@ -48,34 +49,29 @@ public class SharedCarParkState
         System.out.println(me.getName() + " released a lock!");
     }
 
-    public synchronized ArrayList<CarDataModel> ProcessEntry(ClientType clientType, CarDataModel carData)
+    public synchronized void ProcessEntry(ClientType clientType, CarDataModel carData)
     {
         Logger.logMsg(Logger.INFO, "Car Data received from " + clientType.toString());
 
-        System.out.println("I'm here...");
         if (groundFloorCollection.size() < 20)
         {
             groundFloorCollection.add(carData);
-            System.out.println("Ground: " + groundFloorCollection.size());
-            return groundFloorCollection;
         }
         else if (firstFloorCollection.size() < 20)
         {
             firstFloorCollection.add(carData);
-            return firstFloorCollection;
         }
         else
         {
-            //add to waiting collection
-            //once exit has been processed
-            //check if there is anyone waiting
+            //queuedCarsCollection.add(carData);
+
+            //Extra Cars -- Double check.
         }
 
-        return null;
 
     }
 
-    public synchronized ArrayList<CarDataModel> ProcessExit(ClientType clientType, CarDataModel carData)
+    public synchronized void ProcessExit(ClientType clientType)
     {
         Logger.logMsg(Logger.INFO, "Exit Request received from " + clientType.toString());
 
@@ -83,11 +79,27 @@ public class SharedCarParkState
         {
             case GROUNDFLOOREXIT:
                 groundFloorCollection.remove(groundFloorCollection.size() - 1);
-                return groundFloorCollection;
+                break;
             case FIRSTFLOOREXIT:
                 firstFloorCollection.remove(firstFloorCollection.size() - 1);
-                return firstFloorCollection;
+                break;
         }
+
+//        if (queuedCarsCollection.size() > 0)
+//        {
+//            Logger.logMsg(Logger.INFO, "Queued Cars Found. ");
+//            if (groundFloorCollection.size() < 20)
+//            {
+//                groundFloorCollection.add(carData);
+//                return groundFloorCollection;
+//            }
+//            else if (firstFloorCollection.size() < 20)
+//            {
+//                firstFloorCollection.add(carData);
+//                return firstFloorCollection;
+//            }
+//        }
+
 
 //        Lock lock = new ReentrantLock(true);
 //
@@ -95,7 +107,6 @@ public class SharedCarParkState
 //        //insert
 //        lock.unlock();
 
-        return null;
 
     }
 }
