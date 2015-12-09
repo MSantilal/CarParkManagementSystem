@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 
 public class ServerMain
 {
@@ -15,9 +14,6 @@ public class ServerMain
 
     public final SharedCarParkState sharedCarParkState;
 
-    public ArrayList<CarDataModel> GroundFloorCollection;
-    public ArrayList<CarDataModel> FirstFloorCollection;
-
     public boolean IsConnected;
 
     public ServerMain()
@@ -25,10 +21,7 @@ public class ServerMain
         EstablishServerAvailability();
         CreateSocket();
 
-        GroundFloorCollection = new ArrayList<CarDataModel>();
-        FirstFloorCollection = new ArrayList<CarDataModel>();
-
-        sharedCarParkState = new SharedCarParkState(GroundFloorCollection, FirstFloorCollection);
+        sharedCarParkState = new SharedCarParkState();
 
         if (IsConnected)
         {

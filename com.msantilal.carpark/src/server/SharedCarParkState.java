@@ -13,10 +13,10 @@ public class SharedCarParkState
     private ArrayList<CarDataModel> groundFloorCollection;
     private ArrayList<CarDataModel> firstFloorCollection;
 
-    public SharedCarParkState(ArrayList<CarDataModel> groundFloorCollection, ArrayList<CarDataModel> firstFloorCollection)
+    public SharedCarParkState()
     {
-        this.groundFloorCollection = groundFloorCollection;
-        this.firstFloorCollection = firstFloorCollection;
+        groundFloorCollection = new ArrayList<CarDataModel>();
+        firstFloorCollection = new ArrayList<CarDataModel>();
     }
 
     public synchronized void AcquireLock() throws InterruptedException
@@ -70,12 +70,6 @@ public class SharedCarParkState
             //once exit has been processed
             //check if there is anyone waiting
         }
-
-//        Lock lock = new ReentrantLock(true);
-//
-//        lock.lock();
-//        //insert
-//        lock.unlock();
 
         return null;
 
