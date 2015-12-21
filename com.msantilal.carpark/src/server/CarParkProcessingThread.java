@@ -1,7 +1,5 @@
 package server;
 
-import com.thoughtworks.xstream.XStream;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -15,7 +13,6 @@ public class CarParkProcessingThread extends Thread
 {
     private Socket clientSocket;
     private SharedCarParkState sharedCarParkState;
-    private XStream xStream;
 
     public CarParkProcessingThread(Socket socket, SharedCarParkState sharedCarParkState)
     {
@@ -27,71 +24,68 @@ public class CarParkProcessingThread extends Thread
     @Override
     public void run()
     {
-        if (clientSocket != null && clientSocket.isConnected())
+        if (clientSocket != null)
         {
-            try
+            while (clientSocket.isConnected())
             {
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                String inputString = null;
-                StringBuilder sb = new StringBuilder();
+                try
+                {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                    String inputString = null;
+                    StringBuilder sb = new StringBuilder();
 
-//                for (Iterator<String> i = bufferedReader.lines().iterator();;)
-//                {
-//                    String item = i.next();
-//                    System.out.println(sb.toString());
-//                    if (!i.equals(""))
-//                    {
-//                        sb.append(item);
-//                    }
-//                    else
-//                    {
-//                        break;
-//                    }
-//                }
+                    while ((inputString = bufferedReader.readLine()) != null && inputString.length() > 0)
+                    {
+                        sb.append(inputString);
+                    }
 
-                sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-                sb.append("<Client Type=\"ENTRANCE\"><Car Make=\"Ferrari\" Licence=\"SF15-T\"/>");
-                sb.append("</Client>");
+//                sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+//                sb.append("<Client Type=\"ENTRANCE\"><Car Make=\"Ferrari\" Licence=\"SF15-T\"/>");
+//                sb.append("</Client>");
 
 
-                String tempString = sb.toString();
-                System.out.println(tempString);
+                    String tempString = sb.toString();
 
-                JAXBContext jaxbContext = JAXBContext.newInstance(ClientDataModel.class);
-                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
-                StringReader stringReader = new StringReader(sb.toString());
-                ClientDataModel deserialisedClientData = (ClientDataModel) unmarshaller.unmarshal(stringReader);
+                    System.out.println(tempString);
 
-                sharedCarParkState.AcquireLock();
-                        switch (deserialisedClientData.getClientType())
-                        {
-                            case ENTRANCE:
-                                sharedCarParkState.ProcessEntry(ClientType.ENTRANCE, deserialisedClientData);
-                                break;
-                            case GROUNDFLOOREXIT:
-                                sharedCarParkState.ProcessExit(ClientType.GROUNDFLOOREXIT);
-                                break;
-                            case FIRSTFLOOREXIT:
-                                sharedCarParkState.ProcessExit(ClientType.FIRSTFLOOREXIT);
-                                break;
-                        }
-                sharedCarParkState.ReleaseLock();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-            catch (JAXBException e)
-            {
-                e.printStackTrace();
+                    JAXBContext jaxbContext = JAXBContext.newInstance(ClientDataModel.class);
+                    Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
+                    StringReader stringReader = new StringReader(sb.toString());
+                    ClientDataModel deserialisedClientData = (ClientDataModel) unmarshaller.unmarshal(stringReader);
+
+                    sharedCarParkState.AcquireLock();
+                    switch (deserialisedClientData.getClientType())
+                    {
+                        case ENTRANCE:
+                            sharedCarParkState.ProcessEntry(ClientType.ENTRANCE, deserialisedClientData);
+                            break;
+                        case GROUNDFLOOREXIT:
+                            sharedCarParkState.ProcessExit(ClientType.GROUNDFLOOREXIT);
+                            break;
+                        case FIRSTFLOOREXIT:
+                            sharedCarParkState.ProcessExit(ClientType.FIRSTFLOOREXIT);
+                            break;
+                    }
+                    sharedCarParkState.ReleaseLock();
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (JAXBException e)
+                {
+                    e.printStackTrace();
+                }
             }
 
         }
 
     }
 }
+
