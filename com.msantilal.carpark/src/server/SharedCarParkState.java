@@ -49,17 +49,17 @@ public class SharedCarParkState
         System.out.println(me.getName() + " released a lock!");
     }
 
-    public synchronized void ProcessEntry(ClientType clientType, CarDataModel carData)
+    public synchronized void ProcessEntry(ClientType clientType, ClientDataModel clientData)
     {
         Logger.logMsg(Logger.INFO, "Car Data received from " + clientType.toString());
 
         if (groundFloorCollection.size() < 20)
         {
-            groundFloorCollection.add(carData);
+            groundFloorCollection.add(clientData.CarDataModel);
         }
         else if (firstFloorCollection.size() < 20)
         {
-            firstFloorCollection.add(carData);
+            firstFloorCollection.add(clientData.CarDataModel);
         }
         else
         {
