@@ -1,6 +1,8 @@
 package server;
 
-import com.sun.media.jfxmedia.logging.Logger;
+
+
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,12 +18,17 @@ public class ServerMain
 
     public boolean IsConnected;
 
+    public Logger Logger;
+
+
     public ServerMain()
     {
+        Logger = Logger.getLogger(this.getClass().getCanonicalName());
+
         EstablishServerAvailability();
         CreateSocket();
 
-        sharedCarParkState = new SharedCarParkState();
+        sharedCarParkState = new SharedCarParkState(Logger);
 
         if (IsConnected)
         {
@@ -31,7 +38,7 @@ public class ServerMain
             }
             catch (IOException e)
             {
-                Logger.logMsg(Logger.ERROR, e.getMessage());
+                Logger.error(e.getMessage());
             }
         }
 
@@ -45,7 +52,7 @@ public class ServerMain
         }
         catch (UnknownHostException e)
         {
-            Logger.logMsg(Logger.ERROR, e.getMessage());
+            Logger.error(e.getMessage());
         }
     }
 
@@ -53,22 +60,22 @@ public class ServerMain
     {
         try
         {
-            serverSocket = new ServerSocket(10030);
+            serverSocket = new ServerSocket(10031);
         }
         catch (IOException e)
         {
-            Logger.logMsg(Logger.ERROR, e.getMessage());
+            Logger.error(e.getMessage());
         }
         finally
         {
             if (serverSocket.isBound())
             {
-                Logger.logMsg(Logger.INFO, "Server Socket created. Car Park Server open at: " + localMachine.getHostAddress() + " on Port: " + serverSocket.getLocalPort());
+                Logger.info("Server Socket created. Car Park Server open at: " + localMachine.getHostAddress() + " on Port: " + serverSocket.getLocalPort());
                 IsConnected = true;
             }
             else
             {
-                Logger.logMsg(Logger.INFO, "Server Socket could not be created.");
+                Logger.info("Server Socket could not be created.");
                 IsConnected = false;
             }
         }
@@ -80,12 +87,13 @@ public class ServerMain
         {
             while (serverSocket.isBound())
             {
-                new CarParkProcessingThread(serverSocket.accept(), sharedCarParkState).start();
+                Logger.info("New Client Connected.");
+                new CarParkProcessingThread(serverSocket.accept(), sharedCarParkState, Logger).start();
             }
         }
         catch (Exception e)
         {
-            Logger.logMsg(Logger.ERROR, e.getMessage());
+            Logger.error(e.getMessage());
         }
     }
 }

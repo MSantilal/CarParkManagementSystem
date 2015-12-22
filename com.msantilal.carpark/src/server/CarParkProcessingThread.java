@@ -1,5 +1,7 @@
 package server;
 
+import org.apache.log4j.Logger;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -14,11 +16,14 @@ public class CarParkProcessingThread extends Thread
     private Socket clientSocket;
     private SharedCarParkState sharedCarParkState;
 
-    public CarParkProcessingThread(Socket socket, SharedCarParkState sharedCarParkState)
+    public Logger Logger;
+
+    public CarParkProcessingThread(Socket socket, SharedCarParkState sharedCarParkState, Logger logger)
     {
         super("CarParkProcessingThread");
         this.clientSocket = socket;
         this.sharedCarParkState = sharedCarParkState;
+        this.Logger = logger;
     }
 
     @Override
@@ -65,15 +70,15 @@ public class CarParkProcessingThread extends Thread
             }
             catch (InterruptedException e)
             {
-                e.printStackTrace();
+                Logger.error(e.getMessage());
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                Logger.error(e.getMessage());
             }
             catch (JAXBException e)
             {
-                e.printStackTrace();
+                Logger.error(e.getMessage());
             }
         }
     }
