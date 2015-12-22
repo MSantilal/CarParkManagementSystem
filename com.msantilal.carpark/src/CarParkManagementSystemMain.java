@@ -1,4 +1,4 @@
-package server;
+import server.ServerMain;
 
 public class CarParkManagementSystemMain
 {
