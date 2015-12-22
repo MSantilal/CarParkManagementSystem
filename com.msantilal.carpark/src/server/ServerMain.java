@@ -53,7 +53,7 @@ public class ServerMain
     {
         try
         {
-            serverSocket = new ServerSocket(10031);
+            serverSocket = new ServerSocket(10030);
         }
         catch (IOException e)
         {

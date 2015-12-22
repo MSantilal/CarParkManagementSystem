@@ -24,68 +24,64 @@ public class CarParkProcessingThread extends Thread
     @Override
     public void run()
     {
-        if (clientSocket != null)
+        if (clientSocket != null && clientSocket.isConnected())
         {
-            while (clientSocket.isConnected())
+            try
             {
-                try
-                {
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                    String inputString = null;
-                    StringBuilder sb = new StringBuilder();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                String inputString;
 
-                    while ((inputString = bufferedReader.readLine()) != null && inputString.length() > 0)
+                while ((inputString = bufferedReader.readLine()) != null)
+                {
+                    if (inputString.contains("<?xml version=\"1.0\" encoding=\"utf-8\"?>"))
                     {
-                        sb.append(inputString);
+                        JAXBContext jaxbContext = JAXBContext.newInstance(ClientDataModel.class);
+                        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
+                        StringReader stringReader = new StringReader(inputString);
+                        ClientDataModel deserialisedClientData = (ClientDataModel) unmarshaller.unmarshal(stringReader);
+
+                        sharedCarParkState.AcquireLock();
+                        switch (deserialisedClientData.getClientType())
+                        {
+                            case ENTRANCE:
+                                sharedCarParkState.ProcessEntry(ClientType.ENTRANCE, deserialisedClientData);
+                                break;
+                            case GROUNDFLOOREXIT:
+                                sharedCarParkState.ProcessExit(ClientType.GROUNDFLOOREXIT);
+                                break;
+                            case FIRSTFLOOREXIT:
+                                sharedCarParkState.ProcessExit(ClientType.FIRSTFLOOREXIT);
+                                break;
+                        }
+                        sharedCarParkState.ReleaseLock();
                     }
-
-//                sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-//                sb.append("<Client Type=\"ENTRANCE\"><Car Make=\"Ferrari\" Licence=\"SF15-T\"/>");
-//                sb.append("</Client>");
-
-
-                    String tempString = sb.toString();
-
-
-                    System.out.println(tempString);
-
-                    JAXBContext jaxbContext = JAXBContext.newInstance(ClientDataModel.class);
-                    Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-                    StringReader stringReader = new StringReader(sb.toString());
-                    ClientDataModel deserialisedClientData = (ClientDataModel) unmarshaller.unmarshal(stringReader);
-
-                    sharedCarParkState.AcquireLock();
-                    switch (deserialisedClientData.getClientType())
+                    else if (inputString.contains("DISCONNECT"))
                     {
-                        case ENTRANCE:
-                            sharedCarParkState.ProcessEntry(ClientType.ENTRANCE, deserialisedClientData);
-                            break;
-                        case GROUNDFLOOREXIT:
-                            sharedCarParkState.ProcessExit(ClientType.GROUNDFLOOREXIT);
-                            break;
-                        case FIRSTFLOOREXIT:
-                            sharedCarParkState.ProcessExit(ClientType.FIRSTFLOOREXIT);
-                            break;
+                        Dispose();
+                        break;
                     }
-                    sharedCarParkState.ReleaseLock();
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-                catch (JAXBException e)
-                {
-                    e.printStackTrace();
                 }
             }
-
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            catch (JAXBException e)
+            {
+                e.printStackTrace();
+            }
         }
+    }
 
+    private void Dispose() throws IOException
+    {
+        clientSocket.close();
+        clientSocket = null;
     }
 }
 
