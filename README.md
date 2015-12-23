@@ -9,3 +9,7 @@ A multi-threaded client-server system that shows how a car park management syste
 ```
 git clone https://github.com/MSantilal/CarParkManagementSystem.git
 ```
+##Copyright
+Copyright 2015 Monil Santilal
+
+Licensed under the [MIT License](https://github.com/MSantilal/CarParkManagementSystem/blob/master/LICENSE)
