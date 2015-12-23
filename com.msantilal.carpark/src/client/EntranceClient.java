@@ -1,10 +1,12 @@
 package client;
 
 import javax.swing.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 
 public class EntranceClient extends JFrame
@@ -166,6 +168,10 @@ public class EntranceClient extends JFrame
                 {
                     e1.printStackTrace();
                 }
+                catch (JAXBException e1)
+                {
+                    e1.printStackTrace();
+                }
 
             }
         });
@@ -188,12 +194,37 @@ public class EntranceClient extends JFrame
         }
     }
 
-    private void SendData(String outgoingXml) throws IOException
+    private void SendData(String outgoingXml) throws IOException, JAXBException
     {
         if (isConnected)
         {
             PrintWriter printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
             printWriter.println(outgoingXml);
+
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+            String incomingParkingSpacesUpdate = bufferedReader.readLine();
+
+            System.out.println(incomingParkingSpacesUpdate);
+
+            JAXBContext jaxbContext = JAXBContext.newInstance(FloorSpaceDataModel.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
+            StringReader stringReader = new StringReader(incomingParkingSpacesUpdate);
+            FloorSpaceDataModel deserialisedFloorInfo = (FloorSpaceDataModel) unmarshaller.unmarshal(stringReader);
+
+            for (FloorInfo info : deserialisedFloorInfo.FloorInfoList)
+            {
+                if (info.Level == FloorLevel.GROUNDFLOOR)
+                {
+                    carsOnGroundFloor.setText(info.SpaceCount);
+                }
+                else if (info.Level == FloorLevel.FIRSTFLOOR)
+                {
+                    carsOnFirstFloor.setText(info.SpaceCount);
+                }
+            }
+
         }
     }
 

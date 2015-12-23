@@ -5,10 +5,7 @@ import org.apache.log4j.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
+import java.io.*;
 import java.net.Socket;
 
 public class CarParkProcessingThread extends Thread
@@ -34,6 +31,8 @@ public class CarParkProcessingThread extends Thread
             try
             {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
+
                 String inputString;
 
                 while ((inputString = bufferedReader.readLine()) != null)
@@ -51,6 +50,8 @@ public class CarParkProcessingThread extends Thread
                         {
                             case ENTRANCE:
                                 sharedCarParkState.ProcessEntry(ClientType.ENTRANCE, deserialisedClientData);
+                                printWriter.println(sharedCarParkState.UpdateFloorSpaces());
+                                printWriter.flush();
                                 break;
                             case GROUNDFLOOREXIT:
                                 sharedCarParkState.ProcessExit(ClientType.GROUNDFLOOREXIT);

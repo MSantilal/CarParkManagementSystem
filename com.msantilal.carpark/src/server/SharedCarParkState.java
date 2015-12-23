@@ -3,6 +3,7 @@ package server;
 
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class SharedCarParkState
@@ -15,6 +16,7 @@ public class SharedCarParkState
     private final ArrayList<CarDataModel> queuedCarsCollection;
 
     public Logger Logger;
+
 
     public SharedCarParkState(Logger logger)
     {
@@ -55,7 +57,7 @@ public class SharedCarParkState
         Logger.debug(me.getName() + ": Has released a lock.");
     }
 
-    public synchronized void ProcessEntry(ClientType clientType, ClientDataModel clientData)
+    public synchronized void ProcessEntry(ClientType clientType, ClientDataModel clientData) throws IOException
     {
         Logger.info("Car Data received from " + clientType.toString());
 
@@ -82,6 +84,23 @@ public class SharedCarParkState
             //Extra Cars -- Double check.
         }
     }
+
+    public synchronized String UpdateFloorSpaces()
+    {
+        StringBuilder outgoingXml = new StringBuilder();
+
+        outgoingXml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+        outgoingXml.append("<FloorInfo>");
+        outgoingXml.append("<Info Level=\"GROUNDFLOOR\" Count=\"" +
+                groundFloorCollection.size() + "\"></Info>");
+        outgoingXml.append("<Info Level=\"FIRSTFLOOR\" Count=\"" +
+                firstFloorCollection.size() + "\"></Info>");
+        outgoingXml.append("</FloorInfo>");
+
+        return outgoingXml.toString();
+
+    }
+
 
     public synchronized void ProcessExit(ClientType clientType)
     {
