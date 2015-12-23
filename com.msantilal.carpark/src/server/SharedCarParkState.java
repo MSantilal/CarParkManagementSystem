@@ -3,10 +3,12 @@ package server;
 
 import org.apache.log4j.Logger;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
-public class SharedCarParkState
+public class SharedCarParkState extends JFrame
 {
     private boolean isAccessing = false;
     private int waitingThreads = 0;
@@ -16,10 +18,19 @@ public class SharedCarParkState
     private final ArrayList<CarDataModel> queuedCarsCollection;
 
     public Logger Logger;
+    private javax.swing.JPanel JPanel;
+    private JLabel carsOnGroundFloor;
+    private JLabel carsOnFirstFloor;
+    private JLabel queuedCars;
 
 
     public SharedCarParkState(Logger logger)
     {
+        super("Car Park State");
+
+        setContentPane(JPanel);
+        pack();
+        setVisible(true);
         this.Logger = logger;
 
         groundFloorCollection = new ArrayList<CarDataModel>();
@@ -68,6 +79,7 @@ public class SharedCarParkState
             groundFloorCollection.add(clientData.CarDataModel);
             Logger.info("Car Parked - Details: Make: " + clientData.CarDataModel.CarMake + " Licence Plate: " + clientData.CarDataModel.CarLicence);
             Logger.info("NEW CAR PARKED - Number of Cars on Ground Floor: " + groundFloorCollection.size());
+
         }
         else if (firstFloorCollection.size() < 20)
         {
@@ -76,12 +88,11 @@ public class SharedCarParkState
             firstFloorCollection.add(clientData.CarDataModel);
             Logger.info("Car Parked - Details: Make: " + clientData.CarDataModel.CarMake + " Licence Plate: " + clientData.CarDataModel.CarLicence);
             Logger.info("NEW CAR PARKED - Number of Cars on First Floor: " + firstFloorCollection.size());
+
         }
         else
         {
-            //queuedCarsCollection.add(carData);
-
-            //Extra Cars -- Double check.
+            queuedCarsCollection.add(clientData.CarDataModel);
         }
     }
 
@@ -96,6 +107,10 @@ public class SharedCarParkState
         outgoingXml.append("<Info Level=\"FIRSTFLOOR\" Count=\"" +
                 firstFloorCollection.size() + "\"></Info>");
         outgoingXml.append("</FloorInfo>");
+
+        carsOnGroundFloor.setText(Integer.toString(groundFloorCollection.size()));
+        carsOnFirstFloor.setText(Integer.toString(firstFloorCollection.size()));
+        queuedCars.setText(Integer.toString(queuedCarsCollection.size()));
 
         return outgoingXml.toString();
 
@@ -120,28 +135,30 @@ public class SharedCarParkState
                 break;
         }
 
-//        if (queuedCarsCollection.size() > 0)
-//        {
-//            Logger.logMsg(Logger.INFO, "Queued Cars Found. ");
-//            if (groundFloorCollection.size() < 20)
-//            {
-//                groundFloorCollection.add(carData);
-//                return groundFloorCollection;
-//            }
-//            else if (firstFloorCollection.size() < 20)
-//            {
-//                firstFloorCollection.add(carData);
-//                return firstFloorCollection;
-//            }
-//        }
+        if (queuedCarsCollection.size() > 0)
+        {
+            Logger.info("Queued Cars Found. ");
 
+            for (Iterator<CarDataModel> carData = queuedCarsCollection.iterator(); carData.hasNext(); )
+            {
+                CarDataModel data = carData.next();
 
-//        Lock lock = new ReentrantLock(true);
-//
-//        lock.lock();
-//        //insert
-//        lock.unlock();
+                if (groundFloorCollection.size() < 20)
+                {
+                    groundFloorCollection.add(data);
+                    carData.remove();
+                }
+                else if (firstFloorCollection.size() < 20)
+                {
+                    firstFloorCollection.add(data);
+                    carData.remove();
+                }
+            }
 
+            carsOnGroundFloor.setText(Integer.toString(groundFloorCollection.size()));
+            carsOnFirstFloor.setText(Integer.toString(firstFloorCollection.size()));
+            queuedCars.setText(Integer.toString(queuedCarsCollection.size()));
+        }
 
     }
 }

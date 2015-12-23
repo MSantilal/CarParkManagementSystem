@@ -55,9 +55,13 @@ public class CarParkProcessingThread extends Thread
                                 break;
                             case GROUNDFLOOREXIT:
                                 sharedCarParkState.ProcessExit(ClientType.GROUNDFLOOREXIT);
+                                printWriter.println(sharedCarParkState.UpdateFloorSpaces());
+                                printWriter.flush();
                                 break;
                             case FIRSTFLOOREXIT:
                                 sharedCarParkState.ProcessExit(ClientType.FIRSTFLOOREXIT);
+                                printWriter.println(sharedCarParkState.UpdateFloorSpaces());
+                                printWriter.flush();
                                 break;
                         }
                         sharedCarParkState.ReleaseLock();

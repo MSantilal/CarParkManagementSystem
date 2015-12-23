@@ -6,5 +6,5 @@ package client;
 public enum FloorLevel
 {
     GROUNDFLOOR,
-    FIRSTFLOOR
+    FIRSTFLOOR,
 }

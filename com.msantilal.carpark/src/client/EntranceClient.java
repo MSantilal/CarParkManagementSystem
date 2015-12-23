@@ -190,7 +190,7 @@ public class EntranceClient extends JFrame
         }
         catch (Exception e)
         {
-            //
+
         }
     }
 
