@@ -125,13 +125,27 @@ public class SharedCarParkState extends JFrame
         {
             case GROUNDFLOOREXIT:
                 Logger.info("Number of Cars on Ground Floor: " + groundFloorCollection.size());
-                groundFloorCollection.remove(groundFloorCollection.size() - 1);
-                Logger.info("Car Removed. Current number of Cars on GF: " + groundFloorCollection.size());
+                if (groundFloorCollection.size() > 0)
+                {
+                    groundFloorCollection.remove(groundFloorCollection.size() - 1);
+                    Logger.info("Car Removed. Current number of Cars on GF: " + groundFloorCollection.size());
+                }
+                else
+                {
+                    Logger.info("No Cars on Ground Floor: " + groundFloorCollection.size());
+                }
                 break;
             case FIRSTFLOOREXIT:
                 Logger.info("Number of Cars on First Floor: " + firstFloorCollection.size());
-                firstFloorCollection.remove(firstFloorCollection.size() - 1);
-                Logger.info("Car Removed. Current number of Cars on FF: " + firstFloorCollection.size());
+                if (firstFloorCollection.size() > 0)
+                {
+                    firstFloorCollection.remove(firstFloorCollection.size() - 1);
+                    Logger.info("Car Removed. Current number of Cars on FF: " + firstFloorCollection.size());
+                }
+                else
+                {
+                    Logger.info("No Cars on First Floor: " + firstFloorCollection.size());
+                }
                 break;
         }
 

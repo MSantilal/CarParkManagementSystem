@@ -30,6 +30,23 @@ public class ClientMain extends JFrame
             }
         });
 
+
         setVisible(true);
+        groundFloorExitButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                new GroundFloorExitClient();
+            }
+        });
+        firstFloorExitButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                new FirstFloorExitClient();
+            }
+        });
     }
 }
