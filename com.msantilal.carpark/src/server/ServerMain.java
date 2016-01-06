@@ -16,7 +16,6 @@ public class ServerMain
 
     public final SharedCarParkState sharedCarParkState;
 
-    public boolean IsConnected;
 
     public Logger Logger;
 
@@ -30,7 +29,7 @@ public class ServerMain
 
         sharedCarParkState = new SharedCarParkState(Logger);
 
-        if (IsConnected)
+        if (serverSocket.isBound())
         {
             try
             {
@@ -71,12 +70,10 @@ public class ServerMain
             if (serverSocket.isBound())
             {
                 Logger.info("Server Socket created. Car Park Server open at: " + localMachine.getHostAddress() + " on Port: " + serverSocket.getLocalPort());
-                IsConnected = true;
             }
             else
             {
                 Logger.info("Server Socket could not be created.");
-                IsConnected = false;
             }
         }
     }
