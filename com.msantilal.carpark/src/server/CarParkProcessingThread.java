@@ -66,11 +66,6 @@ public class CarParkProcessingThread extends Thread
                         }
                         sharedCarParkState.ReleaseLock();
                     }
-                    else if (inputString.contains("DISCONNECT"))
-                    {
-                        Dispose();
-                        break;
-                    }
                 }
             }
             catch (InterruptedException e)
@@ -86,12 +81,6 @@ public class CarParkProcessingThread extends Thread
                 Logger.error(e.getMessage());
             }
         }
-    }
-
-    private void Dispose() throws IOException
-    {
-        clientSocket.close();
-        clientSocket = null;
     }
 }
 
