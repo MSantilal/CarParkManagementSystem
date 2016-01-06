@@ -4,5 +4,12 @@ A multi-threaded client-server system that shows how a car park management syste
 ##Dependencies
 * Log4j 1.2 (log4j-1.2.17.jar - Available at [logging.apache.org](https://logging.apache.org/log4j/1.2/download.html))
 
+##Procurement
+* Clone the repository via bash or a GUI based client:
+```
+git clone https://github.com/MSantilal/CarParkManagementSystem.git
+```
+##Copyright
+Copyright 2015 Monil Santilal
 
-*Currently work in progress*
+Licensed under the [MIT License](https://github.com/MSantilal/CarParkManagementSystem/blob/master/LICENSE)
