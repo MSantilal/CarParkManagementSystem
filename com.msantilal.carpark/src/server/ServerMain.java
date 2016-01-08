@@ -125,7 +125,7 @@ public class ServerMain
                     }
                     catch (IOException e)
                     {
-                        e.printStackTrace();
+                        Logger.info("Client Disconnected");
                         SocketList.remove(s);
                     }
                     sharedCarParkState.ReleaseLock();

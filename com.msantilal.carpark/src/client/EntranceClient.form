@@ -18,11 +18,6 @@
           <text value="Entrance Client!"/>
         </properties>
       </component>
-      <vspacer id="af84">
-        <constraints>
-          <grid row="7" column="0" row-span="1" col-span="3" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-        </constraints>
-      </vspacer>
       <component id="5bc7b" class="javax.swing.JButton" binding="connectToCarParkButton" default-binding="true">
         <constraints>
           <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
@@ -126,6 +121,11 @@
           <text value="CONNECTED TO SERVER!"/>
         </properties>
       </component>
+      <vspacer id="3f494">
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="3" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
     </children>
   </grid>
 </form>
