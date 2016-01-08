@@ -106,7 +106,7 @@ public class SharedCarParkState extends JFrame
                 groundFloorCollection.size() + "\"></Info>");
         outgoingXml.append("<Info Level=\"FIRSTFLOOR\" Count=\"" +
                 firstFloorCollection.size() + "\"></Info>");
-        outgoingXml.append("</FloorInfo>");
+        outgoingXml.append("</FloorInfo>\r\n");
 
         carsOnGroundFloor.setText(Integer.toString(groundFloorCollection.size()));
         carsOnFirstFloor.setText(Integer.toString(firstFloorCollection.size()));
