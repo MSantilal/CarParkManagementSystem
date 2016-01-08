@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class SharedCarParkState extends JFrame
 {
@@ -15,13 +14,11 @@ public class SharedCarParkState extends JFrame
 
     private final ArrayList<CarDataModel> groundFloorCollection;
     private final ArrayList<CarDataModel> firstFloorCollection;
-    private final ArrayList<CarDataModel> queuedCarsCollection;
 
     public Logger Logger;
     private javax.swing.JPanel JPanel;
     private JLabel carsOnGroundFloor;
     private JLabel carsOnFirstFloor;
-    private JLabel queuedCars;
 
 
     public SharedCarParkState(Logger logger)
@@ -35,7 +32,6 @@ public class SharedCarParkState extends JFrame
 
         groundFloorCollection = new ArrayList<CarDataModel>();
         firstFloorCollection = new ArrayList<CarDataModel>();
-        queuedCarsCollection = new ArrayList<CarDataModel>();
 
     }
 
@@ -90,10 +86,6 @@ public class SharedCarParkState extends JFrame
             Logger.info("NEW CAR PARKED - Number of Cars on First Floor: " + firstFloorCollection.size());
 
         }
-        else
-        {
-            queuedCarsCollection.add(clientData.CarDataModel);
-        }
     }
 
     public synchronized String UpdateFloorSpaces()
@@ -110,7 +102,6 @@ public class SharedCarParkState extends JFrame
 
         carsOnGroundFloor.setText(Integer.toString(groundFloorCollection.size()));
         carsOnFirstFloor.setText(Integer.toString(firstFloorCollection.size()));
-        queuedCars.setText(Integer.toString(queuedCarsCollection.size()));
 
         return outgoingXml.toString();
 
@@ -148,31 +139,5 @@ public class SharedCarParkState extends JFrame
                 }
                 break;
         }
-
-        if (queuedCarsCollection.size() > 0)
-        {
-            Logger.info("Queued Cars Found. ");
-
-            for (Iterator<CarDataModel> carData = queuedCarsCollection.iterator(); carData.hasNext(); )
-            {
-                CarDataModel data = carData.next();
-
-                if (groundFloorCollection.size() < 20)
-                {
-                    groundFloorCollection.add(data);
-                    carData.remove();
-                }
-                else if (firstFloorCollection.size() < 20)
-                {
-                    firstFloorCollection.add(data);
-                    carData.remove();
-                }
-            }
-
-            carsOnGroundFloor.setText(Integer.toString(groundFloorCollection.size()));
-            carsOnFirstFloor.setText(Integer.toString(firstFloorCollection.size()));
-            queuedCars.setText(Integer.toString(queuedCarsCollection.size()));
-        }
-
     }
 }

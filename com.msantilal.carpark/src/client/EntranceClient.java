@@ -1,6 +1,7 @@
 package client;
 
 import org.apache.log4j.Logger;
+import server.CarDataModel;
 
 import javax.swing.*;
 import javax.xml.bind.JAXBContext;
@@ -10,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -26,11 +28,13 @@ public class EntranceClient extends JFrame
     private JButton sendCarDetailsButton;
     private JPanel EntranceForm;
     private JLabel connectionStatus;
+    private JLabel carsQueued;
 
     private volatile boolean isConnected;
     private Socket clientSocket;
     private Timer Timer;
 
+    private final ArrayList<CarDataModel> queuedCarsCollection;
 
     public EntranceClient()
     {
@@ -162,16 +166,9 @@ public class EntranceClient extends JFrame
                 int selectedIndexLicence = carLicenceCombo.getSelectedIndex();
                 String carLicence = carLicenceCombo.getItemAt(selectedIndexLicence).toString();
 
-                StringBuilder outgoingXml = new StringBuilder();
-                outgoingXml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-                outgoingXml.append("<Client Type=\"ENTRANCE\"><Car Make=\"" + carMake);
-                outgoingXml.append("\" Licence=\"" + carLicence);
-                outgoingXml.append("\"/>");
-                outgoingXml.append("</Client>\r\n");
-
                 try
                 {
-                    SendData(outgoingXml.toString());
+                    SendData(carMake, carLicence);
                 }
                 catch (IOException e1)
                 {
@@ -185,6 +182,7 @@ public class EntranceClient extends JFrame
             }
         });
 
+        queuedCarsCollection = new ArrayList<CarDataModel>();
 
     }
 
@@ -199,7 +197,7 @@ public class EntranceClient extends JFrame
             {
                 isConnected = clientSocket.isConnected();
                 Timer = new Timer();
-                Timer.scheduleAtFixedRate(new WorkerClass(), 0, 5 * 1000);
+                Timer.scheduleAtFixedRate(new WorkerClass(), 0, 2 * 1000);
             }
         }
         catch (Exception e)
@@ -207,12 +205,30 @@ public class EntranceClient extends JFrame
         }
     }
 
-    private void SendData(String outgoingXml) throws IOException, JAXBException
+    private void SendData(String carMake, String carLicence) throws IOException, JAXBException
     {
         if (isConnected)
         {
-            PrintWriter printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
-            printWriter.println(outgoingXml);
+            StringBuilder outgoingXml = new StringBuilder();
+            outgoingXml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+            outgoingXml.append("<Client Type=\"ENTRANCE\"><Car Make=\"" + carMake);
+            outgoingXml.append("\" Licence=\"" + carLicence);
+            outgoingXml.append("\"/>");
+            outgoingXml.append("</Client>\r\n");
+
+            if (Integer.parseInt(carsOnGroundFloor.getText()) != 20 || Integer.parseInt(carsOnFirstFloor.getText()) != 20)
+            {
+                PrintWriter printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
+                printWriter.println(outgoingXml);
+            }
+            else
+            {
+                CarDataModel carModel = new CarDataModel();
+                carModel.setCarMake(carMake);
+                carModel.setCarLicence(carLicence);
+                queuedCarsCollection.add(carModel);
+            }
+
         }
     }
 
@@ -282,17 +298,57 @@ public class EntranceClient extends JFrame
                         {
                             FloorSpaceDataModel s = get();
 
+                            carsQueued.setText(Integer.toString(queuedCarsCollection.size()));
+
+                            int groundFloorSpace = 0;
+                            int firstFloorSpace = 0;
+
                             for (final FloorInfo info : s.FloorInfoList)
                             {
                                 if (info.Level == FloorLevel.GROUNDFLOOR)
                                 {
                                     Logger.info("Current Number of Cars Parked on Ground Floor: " + info.SpaceCount);
                                     carsOnGroundFloor.setText(info.SpaceCount);
+                                    groundFloorSpace = Integer.parseInt(info.SpaceCount);
                                 }
                                 else if (info.Level == FloorLevel.FIRSTFLOOR)
                                 {
                                     Logger.info("Current Number of Cars Parked on First Floor: " + info.SpaceCount);
                                     carsOnFirstFloor.setText(info.SpaceCount);
+                                    firstFloorSpace = Integer.parseInt(info.SpaceCount);
+                                }
+                            }
+
+                            if (queuedCarsCollection.size() > 0)
+                            {
+                                Logger.info("Queued Cars Found. ");
+
+                                int differenceGF;
+                                int differenceFF;
+
+                                differenceGF = 20 - groundFloorSpace;
+                                differenceFF = 20 - firstFloorSpace;
+
+                                if (differenceGF != 0)
+                                {
+                                    //do groundfloor
+                                    for (int i = 0; i < differenceGF; i++)
+                                    {
+                                        CarDataModel model = queuedCarsCollection.get(i);
+                                        SendData(model.CarMake, model.CarLicence);
+                                        queuedCarsCollection.remove(i);
+                                    }
+                                }
+
+                                if (differenceFF != 0)
+                                {
+                                    //do firstfloor
+                                    for (int i = 0; i < differenceFF; i++)
+                                    {
+                                        CarDataModel model = queuedCarsCollection.get(i);
+                                        SendData(model.CarMake, model.CarLicence);
+                                        queuedCarsCollection.remove(i);
+                                    }
                                 }
                             }
                         }
@@ -306,6 +362,14 @@ public class EntranceClient extends JFrame
                     {
                         Logger.error(e.getMessage());
                         //e.printStackTrace();
+                    }
+                    catch (JAXBException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
                     }
                 }
             }.execute();

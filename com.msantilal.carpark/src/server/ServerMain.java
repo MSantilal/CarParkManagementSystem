@@ -94,7 +94,7 @@ public class ServerMain
                 SocketList.add(sock);
                 timer = null;
                 timer = new Timer();
-                timer.scheduleAtFixedRate(new UpdateSpaces(), 0, 15 * 1000);
+                timer.scheduleAtFixedRate(new UpdateSpaces(), 0, 5 * 1000);
                 new CarParkProcessingThread(sock, sharedCarParkState, Logger).start();
             }
         }
