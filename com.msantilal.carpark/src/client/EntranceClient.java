@@ -167,7 +167,7 @@ public class EntranceClient extends JFrame
                 outgoingXml.append("<Client Type=\"ENTRANCE\"><Car Make=\"" + carMake);
                 outgoingXml.append("\" Licence=\"" + carLicence);
                 outgoingXml.append("\"/>");
-                outgoingXml.append("</Client>");
+                outgoingXml.append("</Client>\r\n");
 
                 try
                 {
