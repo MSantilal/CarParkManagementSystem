@@ -175,8 +175,11 @@ public class GroundFloorExitClient extends JFrame
 
     private void Dispose() throws IOException
     {
-        clientSocket.close();
-        isConnected = false;
+        if (isConnected)
+        {
+            clientSocket.close();
+            isConnected = false;
+        }
     }
 
 }

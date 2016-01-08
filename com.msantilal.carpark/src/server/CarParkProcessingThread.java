@@ -5,14 +5,16 @@ import org.apache.log4j.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.Socket;
 
 public class CarParkProcessingThread extends Thread
 {
     private Socket clientSocket;
     private SharedCarParkState sharedCarParkState;
-
     public Logger Logger;
 
     public CarParkProcessingThread(Socket socket, SharedCarParkState sharedCarParkState, Logger logger)
@@ -31,7 +33,6 @@ public class CarParkProcessingThread extends Thread
             try
             {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
 
                 String inputString;
 
@@ -50,18 +51,12 @@ public class CarParkProcessingThread extends Thread
                         {
                             case ENTRANCE:
                                 sharedCarParkState.ProcessEntry(ClientType.ENTRANCE, deserialisedClientData);
-                                printWriter.println(sharedCarParkState.UpdateFloorSpaces());
-                                printWriter.flush();
                                 break;
                             case GROUNDFLOOREXIT:
                                 sharedCarParkState.ProcessExit(ClientType.GROUNDFLOOREXIT);
-                                printWriter.println(sharedCarParkState.UpdateFloorSpaces());
-                                printWriter.flush();
                                 break;
                             case FIRSTFLOOREXIT:
                                 sharedCarParkState.ProcessExit(ClientType.FIRSTFLOOREXIT);
-                                printWriter.println(sharedCarParkState.UpdateFloorSpaces());
-                                printWriter.flush();
                                 break;
                         }
                         sharedCarParkState.ReleaseLock();
@@ -82,5 +77,7 @@ public class CarParkProcessingThread extends Thread
             }
         }
     }
+
+
 }
 

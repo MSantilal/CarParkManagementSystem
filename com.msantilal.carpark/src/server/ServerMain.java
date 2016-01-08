@@ -1,21 +1,25 @@
 package server;
 
 
-
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ServerMain
 {
     private InetAddress localMachine;
     private ServerSocket serverSocket;
-
+    private volatile List<Socket> SocketList;
     public final SharedCarParkState sharedCarParkState;
-
+    private Timer timer;
 
     public Logger Logger;
 
@@ -23,11 +27,12 @@ public class ServerMain
     public ServerMain()
     {
         Logger = Logger.getLogger(this.getClass().getCanonicalName());
-
+        SocketList = new ArrayList<Socket>();
         EstablishServerAvailability();
         CreateSocket();
 
         sharedCarParkState = new SharedCarParkState(Logger);
+        timer = new Timer();
 
         if (serverSocket.isBound())
         {
@@ -85,12 +90,55 @@ public class ServerMain
             while (serverSocket.isBound())
             {
                 Logger.info("New Client Connected.");
-                new CarParkProcessingThread(serverSocket.accept(), sharedCarParkState, Logger).start();
+                Socket sock = serverSocket.accept();
+                SocketList.add(sock);
+                timer = null;
+                timer = new Timer();
+                timer.scheduleAtFixedRate(new UpdateSpaces(), 0, 15 * 1000);
+                new CarParkProcessingThread(sock, sharedCarParkState, Logger).start();
             }
         }
         catch (Exception e)
         {
             Logger.error(e.getMessage());
+            System.out.println(e);
+        }
+    }
+
+    class UpdateSpaces extends TimerTask
+    {
+        @Override
+        public void run()
+        {
+            for (Object s : SocketList.toArray())
+            {
+                try
+                {
+                    sharedCarParkState.AcquireLock();
+                    try
+                    {
+                        if (s != null)
+                        {
+                            Socket sock = (Socket) s;
+                            sock.getOutputStream().write(sharedCarParkState.UpdateFloorSpaces().getBytes());
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                        SocketList.remove(s);
+                    }
+                    sharedCarParkState.ReleaseLock();
+
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+
+            }
+
         }
     }
 }
+
