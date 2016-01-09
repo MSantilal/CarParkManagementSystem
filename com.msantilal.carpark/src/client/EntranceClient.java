@@ -191,17 +191,21 @@ public class EntranceClient extends JFrame
     {
         try
         {
+            Logger.info("Opening Client Connection..");
             clientSocket = new Socket("127.0.0.1", 10031);
 
             if (clientSocket.isConnected())
             {
+                Logger.info("Connected to Server on: " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
                 isConnected = clientSocket.isConnected();
                 Timer = new Timer();
                 Timer.scheduleAtFixedRate(new WorkerClass(), 0, 2 * 1000);
+                Logger.info("Polling timer enabled to run at intervals of 2 seconds");
             }
         }
         catch (Exception e)
         {
+            Logger.error(e.getMessage());
         }
     }
 
@@ -209,6 +213,8 @@ public class EntranceClient extends JFrame
     {
         if (isConnected)
         {
+            Logger.info("User Requested to Send Car Data");
+
             StringBuilder outgoingXml = new StringBuilder();
             outgoingXml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
             outgoingXml.append("<Client Type=\"ENTRANCE\"><Car Make=\"" + carMake);
@@ -218,15 +224,18 @@ public class EntranceClient extends JFrame
 
             if (Integer.parseInt(carsOnGroundFloor.getText()) != 20 || Integer.parseInt(carsOnFirstFloor.getText()) != 20)
             {
+                Logger.info("Car Park has spaces available to Park in.");
                 PrintWriter printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
                 printWriter.println(outgoingXml);
             }
             else
             {
+                Logger.info("No free spaces in Car Park. Car to be queued at Entrance.");
                 CarDataModel carModel = new CarDataModel();
                 carModel.setCarMake(carMake);
                 carModel.setCarLicence(carLicence);
                 queuedCarsCollection.add(carModel);
+                Logger.info("Car Queued - Make: " + carMake + " Licence: " + carLicence);
             }
 
         }
@@ -236,6 +245,7 @@ public class EntranceClient extends JFrame
     {
         if (isConnected)
         {
+            Logger.info("Client Disconnected from Server. Disposing all resources.");
             clientSocket.close();
             isConnected = false;
         }
@@ -262,7 +272,7 @@ public class EntranceClient extends JFrame
 
                             while ((incomingParkingSpacesUpdate = bufferedReader.readLine()) != null)
                             {
-                                System.out.println(incomingParkingSpacesUpdate);
+                                Logger.info("Received Space Info from Server: " + incomingParkingSpacesUpdate);
 
                                 JAXBContext jaxbContext = JAXBContext.newInstance(FloorSpaceDataModel.class);
                                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -277,12 +287,10 @@ public class EntranceClient extends JFrame
                     catch (JAXBException e)
                     {
                         Logger.error(e.getMessage());
-                        //e.printStackTrace();
                     }
                     catch (IOException e)
                     {
                         Logger.error(e.getMessage());
-                        //e.printStackTrace();
                     }
                     return null;
                 }
@@ -331,6 +339,7 @@ public class EntranceClient extends JFrame
 
                                 if (differenceGF != 0)
                                 {
+                                    Logger.info("Spaces available on Ground Floor: " + differenceGF + "Dequeueing Cars...");
                                     //do groundfloor
                                     for (int i = 0; i < differenceGF; i++)
                                     {
@@ -342,6 +351,7 @@ public class EntranceClient extends JFrame
 
                                 if (differenceFF != 0)
                                 {
+                                    Logger.info("Spaces available on First Floor: " + differenceFF + "Dequeueing Cars...");
                                     //do firstfloor
                                     for (int i = 0; i < differenceFF; i++)
                                     {
@@ -356,20 +366,18 @@ public class EntranceClient extends JFrame
                     catch (InterruptedException e)
                     {
                         Logger.error(e.getMessage());
-                        //e.printStackTrace();
                     }
                     catch (ExecutionException e)
                     {
                         Logger.error(e.getMessage());
-                        //e.printStackTrace();
                     }
                     catch (JAXBException e)
                     {
-                        e.printStackTrace();
+                        Logger.error("XML Parsing Error: " + e.getMessage());
                     }
                     catch (IOException e)
                     {
-                        e.printStackTrace();
+                        Logger.error(e.getMessage());
                     }
                 }
             }.execute();

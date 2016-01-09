@@ -17,12 +17,12 @@ public class CarParkProcessingThread extends Thread
     private SharedCarParkState sharedCarParkState;
     public Logger Logger;
 
-    public CarParkProcessingThread(Socket socket, SharedCarParkState sharedCarParkState, Logger logger)
+    public CarParkProcessingThread(Socket socket, SharedCarParkState sharedCarParkState)
     {
         super("CarParkProcessingThread");
         this.clientSocket = socket;
         this.sharedCarParkState = sharedCarParkState;
-        this.Logger = logger;
+        Logger = Logger.getLogger(this.getClass().getCanonicalName());
     }
 
     @Override
@@ -47,6 +47,7 @@ public class CarParkProcessingThread extends Thread
                         ClientDataModel deserialisedClientData = (ClientDataModel) unmarshaller.unmarshal(stringReader);
 
                         sharedCarParkState.AcquireLock();
+                        Logger.info("Incoming Client Request from: " + deserialisedClientData.getClientType());
                         switch (deserialisedClientData.getClientType())
                         {
                             case ENTRANCE:

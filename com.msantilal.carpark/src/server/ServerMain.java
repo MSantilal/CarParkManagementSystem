@@ -31,7 +31,7 @@ public class ServerMain
         EstablishServerAvailability();
         CreateSocket();
 
-        sharedCarParkState = new SharedCarParkState(Logger);
+        sharedCarParkState = new SharedCarParkState();
         timer = new Timer();
 
         if (serverSocket.isBound())
@@ -89,19 +89,21 @@ public class ServerMain
         {
             while (serverSocket.isBound())
             {
-                Logger.info("New Client Connected.");
+                Logger.info("Socket Bound. Waiting for Connection.");
                 Socket sock = serverSocket.accept();
+                Logger.info("A Client has connected!");
                 SocketList.add(sock);
+                Logger.info(sock.getInetAddress().getAddress().toString() + " Added to SocketList. " +
+                        "Current number of connected clients: " + SocketList.size());
                 timer = null;
                 timer = new Timer();
                 timer.scheduleAtFixedRate(new UpdateSpaces(), 0, 5 * 1000);
-                new CarParkProcessingThread(sock, sharedCarParkState, Logger).start();
+                new CarParkProcessingThread(sock, sharedCarParkState).start();
             }
         }
         catch (Exception e)
         {
             Logger.error(e.getMessage());
-            System.out.println(e);
         }
     }
 
@@ -133,11 +135,9 @@ public class ServerMain
                 }
                 catch (InterruptedException e)
                 {
-                    e.printStackTrace();
+                    Logger.error("Updating of spaces interrupted. " + e.getMessage());
                 }
-
             }
-
         }
     }
 }

@@ -33,7 +33,7 @@ public class FirstFloorExitClient extends JFrame
         super("First Floor Exit Client");
         setContentPane(FirstFloorExit);
 
-        Logger = org.apache.log4j.Logger.getLogger(this.getClass().getCanonicalName());
+        Logger = Logger.getLogger(this.getClass().getCanonicalName());
         connectionStatus.setVisible(false);
         disconnectFromCarParkButton.setEnabled(false);
         this.addWindowListener(new java.awt.event.WindowAdapter()
@@ -105,14 +105,11 @@ public class FirstFloorExitClient extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                StringBuilder outgoingXml = new StringBuilder();
-                outgoingXml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-                outgoingXml.append("<Client Type=\"FIRSTFLOOREXIT\">");
-                outgoingXml.append("</Client>\r\n");
+
 
                 try
                 {
-                    SendData(outgoingXml.toString());
+                    SendData();
                 }
                 catch (IOException e1)
                 {
@@ -132,25 +129,35 @@ public class FirstFloorExitClient extends JFrame
     {
         try
         {
+            Logger.info("Opening Client Connection..");
             clientSocket = new Socket("127.0.0.1", 10031);
 
             if (clientSocket.isConnected())
             {
+                Logger.info("Connected to Server on: " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
                 isConnected = clientSocket.isConnected();
                 Timer = new Timer();
-                Timer.scheduleAtFixedRate(new WorkerClass(), 0, 5 * 1000);
+                Timer.scheduleAtFixedRate(new WorkerClass(), 0, 2 * 1000);
+                Logger.info("Polling timer enabled to run at intervals of 2 seconds");
             }
         }
         catch (Exception e)
         {
-
+            Logger.error(e.getMessage());
         }
     }
 
-    private void SendData(String outgoingXml) throws IOException, JAXBException
+    private void SendData() throws IOException, JAXBException
     {
         if (isConnected)
         {
+            Logger.info("User Requested to Remove Car");
+
+            StringBuilder outgoingXml = new StringBuilder();
+            outgoingXml.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+            outgoingXml.append("<Client Type=\"FIRSTFLOOREXIT\">");
+            outgoingXml.append("</Client>\r\n");
+
             PrintWriter printWriter = new PrintWriter(clientSocket.getOutputStream(), true);
             printWriter.println(outgoingXml);
         }
@@ -160,6 +167,7 @@ public class FirstFloorExitClient extends JFrame
     {
         if (isConnected)
         {
+            Logger.info("Client Disconnected from Server. Disposing all resources.");
             clientSocket.close();
             isConnected = false;
         }
@@ -185,7 +193,7 @@ public class FirstFloorExitClient extends JFrame
 
                             while ((incomingParkingSpacesUpdate = bufferedReader.readLine()) != null)
                             {
-                                System.out.println(incomingParkingSpacesUpdate);
+                                Logger.info("Received Space Info from Server: " + incomingParkingSpacesUpdate);
 
                                 JAXBContext jaxbContext = JAXBContext.newInstance(FloorSpaceDataModel.class);
                                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -199,13 +207,11 @@ public class FirstFloorExitClient extends JFrame
                     }
                     catch (JAXBException e)
                     {
-                        Logger.error(e.getMessage());
-                        //e.printStackTrace();
+                        Logger.error("XML Parsing Error: " + e.getMessage());
                     }
                     catch (IOException e)
                     {
                         Logger.error(e.getMessage());
-                        //e.printStackTrace();
                     }
                     return null;
                 }
@@ -239,12 +245,10 @@ public class FirstFloorExitClient extends JFrame
                     catch (InterruptedException e)
                     {
                         Logger.error(e.getMessage());
-                        //e.printStackTrace();
                     }
                     catch (ExecutionException e)
                     {
                         Logger.error(e.getMessage());
-                        //e.printStackTrace();
                     }
                 }
             }.execute();

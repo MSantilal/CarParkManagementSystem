@@ -1,6 +1,5 @@
 package server;
 
-
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
@@ -21,15 +20,15 @@ public class SharedCarParkState extends JFrame
     private JLabel carsOnFirstFloor;
 
 
-    public SharedCarParkState(Logger logger)
+    public SharedCarParkState()
     {
         super("Car Park State");
 
         setContentPane(JPanel);
         pack();
         setVisible(true);
-        this.Logger = logger;
 
+        Logger = Logger.getLogger(this.getClass().getCanonicalName());
         groundFloorCollection = new ArrayList<CarDataModel>();
         firstFloorCollection = new ArrayList<CarDataModel>();
 
@@ -75,7 +74,6 @@ public class SharedCarParkState extends JFrame
             groundFloorCollection.add(clientData.CarDataModel);
             Logger.info("Car Parked - Details: Make: " + clientData.CarDataModel.CarMake + " Licence Plate: " + clientData.CarDataModel.CarLicence);
             Logger.info("NEW CAR PARKED - Number of Cars on Ground Floor: " + groundFloorCollection.size());
-
         }
         else if (firstFloorCollection.size() < 20)
         {
@@ -84,7 +82,6 @@ public class SharedCarParkState extends JFrame
             firstFloorCollection.add(clientData.CarDataModel);
             Logger.info("Car Parked - Details: Make: " + clientData.CarDataModel.CarMake + " Licence Plate: " + clientData.CarDataModel.CarLicence);
             Logger.info("NEW CAR PARKED - Number of Cars on First Floor: " + firstFloorCollection.size());
-
         }
     }
 
